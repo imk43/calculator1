@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyScript Example</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js"></script>
+</head>
+<body>
+    <h1>Calculator</h1>
+    <h3>Making math easier</h3>
+    <div>
+        <p>Select an operation to perform:</p>
+        <select id="operation">
+            <option value="add">ADD</option>
+            <option value="subtract">SUBTRACT</option>
+            <option value="multiply">MULTIPLY</option>
+            <option value="divide">DIVIDE</option>
+        </select>
+        <input type="number" id="num1" placeholder="Number 1">
+        <input type="number" id="num2" placeholder="Number 2">
+        <button onclick="calculate()">Calculate</button>
+        <div id="result">Result: </div>
+    </div>
+    <script>
+        let pyodide;
+
+        // Function to initialize Pyodide
+        async function initializePyodide() {
+            if (!pyodide) {
+                pyodide = await loadPyodide();
+            }
+            return pyodide;
+        }
+
+        // Function to perform calculation and display result
+        async function calculate() {
+            const operation = document.getElementById('operation').value;
+            const num1 = document.getElementById('num1').value;
+            const num2 = document.getElementById('num2').value;
+
+            if (!operation || isNaN(num1) || isNaN(num2)) {
+                document.getElementById('result').innerText = 'Please provide valid input.';
+                return;
+            }
+
+            const pythonCode = `
+            def perform_calculation(operation, num1, num2):
+                num1 = float(num1)
+                num2 = float(num2)
+                if operation == "add":
+                    return num1 + num2
+                elif operation == "subtract":
+                    return num1 - num2
+                elif operation == "multiply":
+                    return num1 * num2
+                elif operation == "divide":
+                    return num1 / num2
+                else:
+                    return "Invalid Operation"
+
+            perform_calculation('${operation}', '${num1}', '${num2}')
+            `;
+
+            try {
+                // Initialize Pyodide and run the Python code
+                await initializePyodide();
+                const result = pyodide.runPython(pythonCode);
+                document.getElementById('result').innerText = `Result: ${result}`;
+            } catch (error) {
+                document.getElementById('result').innerText = 'An error occurred: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
